@@ -83,7 +83,7 @@ $(obj)/uImage:	$(obj)/zImage FORCE
 	$(call if_changed,uimage)
 	@$(kecho) '  Image $@ is ready'
 
-$(obj)/uImage.%:	$(obj)/zImage-dtb.% FORCE
+$(obj)/uImage-dtb.%:	$(obj)/zImage-dtb.% FORCE
 	$(call if_changed,uimage)
 	@echo '  Image $@ is ready'
 
