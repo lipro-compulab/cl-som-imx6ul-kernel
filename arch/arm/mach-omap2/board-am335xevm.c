@@ -905,15 +905,14 @@ static struct pinmux_config ecap2_pin_mux[] = {
 	{NULL, 0},
 };
 
-#define AM335XEVM_WLAN_PMENA_GPIO	GPIO_TO_PIN(1, 30)
-#define AM335XEVM_WLAN_IRQ_GPIO		GPIO_TO_PIN(3, 17)
+#define AM335XEVM_WLAN_IRQ_GPIO		GPIO_TO_PIN(0, 19)
 #define AM335XEVM_SK_WLAN_IRQ_GPIO      GPIO_TO_PIN(0, 31)
 
 struct wl12xx_platform_data am335xevm_wlan_data = {
 	.irq = OMAP_GPIO_IRQ(AM335XEVM_WLAN_IRQ_GPIO),
 	.board_ref_clock = WL12XX_REFCLOCK_38_XTAL, /* 38.4Mhz */
 	.bt_enable_gpio = GPIO_TO_PIN(3, 21),
-	.wlan_enable_gpio = GPIO_TO_PIN(1, 16),
+	.wlan_enable_gpio = GPIO_TO_PIN(3, 16),
 };
 
 /* Module pin mux for wlan and bluetooth */
@@ -936,8 +935,8 @@ static struct pinmux_config uart1_wl12xx_pin_mux[] = {
 };
 
 static struct pinmux_config wl12xx_pin_mux[] = {
-	{"gpmc_a0.gpio1_16", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"mcasp0_ahclkr.gpio3_17", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"mcasp0_axr0.gpio3_16", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT_PULLUP},
+	{"xdma_event_intr0.gpio0_19", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{"mcasp0_ahclkx.gpio3_21", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT_PULLUP},
 	{NULL, 0},
  };
@@ -1648,6 +1647,7 @@ static void mmc2_wl12xx_init(int evm_id, int profile)
 	am335x_mmc[1].mmc = 3;
 	am335x_mmc[1].name = "wl1271";
 	am335x_mmc[1].caps = MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD;
+	am335x_mmc[1].pm_caps = MMC_PM_KEEP_POWER;
 	am335x_mmc[1].nonremovable = true;
 	am335x_mmc[1].gpio_cd = -EINVAL;
 	am335x_mmc[1].gpio_wp = -EINVAL;
@@ -1678,6 +1678,8 @@ static void wl12xx_bluetooth_enable(void)
 
 /* wlan enable pin */
 #define AM33XX_CONTROL_PADCONF_GPMC_CSN0_OFFSET		0x087C
+#define AM33XX_CONTROL_PADCONF_MCASP0_AXR0_OFFSET 	0x0998
+
 static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
 {
 	int pad_mux_value;
@@ -1691,6 +1693,11 @@ static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
 			pad_mux_value = readl(AM33XX_CTRL_REGADDR(AM33XX_CONTROL_PADCONF_GPMC_CSN0_OFFSET));
 			pad_mux_value &= (~AM33XX_PULL_DISA);
 			writel(pad_mux_value, AM33XX_CTRL_REGADDR(AM33XX_CONTROL_PADCONF_GPMC_CSN0_OFFSET));
+		} else {
+		/* GEN_PURP_EVM: Enable pullup on the WLAN enable pin for keeping wlan active during suspend */
+			pad_mux_value = readl(AM33XX_CTRL_REGADDR(AM33XX_CONTROL_PADCONF_MCASP0_AXR0_OFFSET));
+			pad_mux_value &= (~AM33XX_PULL_DISA);
+			writel(pad_mux_value, AM33XX_CTRL_REGADDR(AM33XX_CONTROL_PADCONF_MCASP0_AXR0_OFFSET));
 		}
 
 		mdelay(70);
@@ -1701,6 +1708,11 @@ static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
 			pad_mux_value = readl(AM33XX_CTRL_REGADDR(AM33XX_CONTROL_PADCONF_GPMC_CSN0_OFFSET));
 			pad_mux_value |= AM33XX_PULL_DISA;
 			writel(pad_mux_value, AM33XX_CTRL_REGADDR(AM33XX_CONTROL_PADCONF_GPMC_CSN0_OFFSET));
+		} else {
+		/* GEN_PURP_EVM: Disable pullup on the WLAN enable when WLAN is off */
+			pad_mux_value = readl(AM33XX_CTRL_REGADDR(AM33XX_CONTROL_PADCONF_MCASP0_AXR0_OFFSET));
+			pad_mux_value |= AM33XX_PULL_DISA;
+			writel(pad_mux_value, AM33XX_CTRL_REGADDR(AM33XX_CONTROL_PADCONF_MCASP0_AXR0_OFFSET));
 		}
 	}
 
