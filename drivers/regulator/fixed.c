@@ -107,7 +107,30 @@ of_get_fixed_voltage_config(struct device *dev)
 	return config;
 }
 
+static int fixed_voltage_get_voltage(struct regulator_dev *dev)
+{
+	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
+
+	if (data->desc.fixed_uV)
+		return data->desc.fixed_uV;
+	else
+		return -EINVAL;
+}
+
+static int fixed_voltage_list_voltage(struct regulator_dev *dev,
+				      unsigned selector)
+{
+	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
+
+	if (selector != 0)
+		return -EINVAL;
+
+	return data->desc.fixed_uV;
+}
+
 static struct regulator_ops fixed_voltage_ops = {
+	.get_voltage = fixed_voltage_get_voltage,
+	.list_voltage = fixed_voltage_list_voltage,
 };
 
 static int reg_fixed_voltage_probe(struct platform_device *pdev)
