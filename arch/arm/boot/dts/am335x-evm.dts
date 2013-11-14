@@ -611,8 +611,8 @@
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <1800000>;
 
-		/* WLAN_EN GPIO for this board - Bank1, pin16 */
-		gpio = <&gpio1 16 0>;
+		/* WLAN_EN GPIO for this board - Bank3, pin16 */
+		gpio = <&gpio3 16 0>;
 
 		/* WLAN card specific delay */
 		startup-delay-us = <70000>;
@@ -707,7 +707,7 @@
 
 	wlcore {
 		compatible = "wlcore";
-		gpio = <113>; /* Bank3, pin17 */
+		gpio = <19>; /* Bank0, pin19 */
 
 		/*
 		 * TODO: use edge irqs for suspend/resume.
@@ -829,6 +829,7 @@
 			regulator-always-on;
 		};
 	};
+
 };
 
 &mac {
@@ -894,3 +895,4 @@
 	ti,edma-xbar-event-map = <1 12
 				  2 13>;
 };
+
