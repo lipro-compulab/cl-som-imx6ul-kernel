@@ -41,6 +41,8 @@
 #include <linux/mfd/ti_tscadc.h>
 #include <linux/reboot.h>
 #include <linux/pwm/pwm.h>
+#include <linux/skbuff.h>
+#include <linux/ti_wilink_st.h>
 #include <linux/rtc/rtc-omap.h>
 #include <linux/opp.h>
 
@@ -78,6 +80,10 @@
 /* BBB PHY IDs */
 #define BBB_PHY_ID		0x7c0f1
 #define BBB_PHY_MASK		0xfffffffe
+
+/* ZigBee Gateway PHY IDs */
+#define AM335X_ZBGW_PHY_ID      0x20005c90
+#define AM335X_ZBGW_PHY_MASK    0xfffffffe
 
 /* AM335X EVM Phy ID and Debug Registers */
 #define AM335X_EVM_PHY_ID		0x4dd074
@@ -481,6 +487,23 @@ static struct pinmux_config nand_pin_mux[] = {
 	{NULL, 0},
 };
 
+/* Module pin mux for ZBGW - EM Header */
+static struct pinmux_config spi0_zbgw_pin_mux[] = {
+	{"spi0_sclk.spi0_sclk", OMAP_MUX_MODE0 | AM33XX_PULL_ENBL
+							| AM33XX_INPUT_EN},
+	{"spi0_d0.spi0_d0", OMAP_MUX_MODE0 | AM33XX_PULL_ENBL | AM33XX_PULL_UP
+							| AM33XX_INPUT_EN},
+	{"spi0_d1.spi0_d1", OMAP_MUX_MODE0 | AM33XX_PULL_ENBL
+							| AM33XX_INPUT_EN},
+	{"spi0_cs0.spi0_cs0", OMAP_MUX_MODE0 | AM33XX_PULL_ENBL | AM33XX_PULL_UP
+							| AM33XX_INPUT_EN},
+	{"spi0_cs0.spi0_cs0", OMAP_MUX_MODE0 | AM33XX_PULL_ENBL | AM33XX_PULL_UP
+							| AM33XX_INPUT_EN},
+	{"spi0_cs1.spi0_cs1", OMAP_MUX_MODE0 | AM33XX_PULL_ENBL | AM33XX_PULL_UP
+							| AM33XX_INPUT_EN},
+	{NULL, 0},
+};
+
 /* Module pin mux for SPI fash */
 static struct pinmux_config spi0_pin_mux[] = {
 	{"spi0_sclk.spi0_sclk", OMAP_MUX_MODE0 | AM33XX_PULL_ENBL
@@ -686,6 +709,31 @@ static struct pinmux_config uart2_pin_mux[] = {
 	{NULL, 0},
 };
 
+/* Module pin mux for uart4 */
+static struct pinmux_config uart4_pin_mux[] = {
+	{"mii1_txd3.uart4_rxd", OMAP_MUX_MODE3 | AM33XX_SLEWCTRL_SLOW |
+						AM33XX_PIN_INPUT_PULLUP},
+	{"mii1_txd2.uart4_txd", OMAP_MUX_MODE3 | AM33XX_PULL_UP |
+						AM33XX_PULL_DISA |
+						AM33XX_SLEWCTRL_SLOW},
+	{"lcd_data13.uart4_rts", OMAP_MUX_MODE6 | AM33XX_SLEWCTRL_SLOW |
+						AM33XX_PIN_INPUT_PULLUP},
+	{"lcd_data12.uart4_cts", OMAP_MUX_MODE6 | AM33XX_PULL_UP |
+						AM33XX_PULL_DISA |
+						AM33XX_SLEWCTRL_SLOW},
+	{NULL, 0},
+};
+
+/* Module pin mux for uart5 */
+static struct pinmux_config uart5_pin_mux[] = {
+	{"lcd_data9.uart5_rxd", OMAP_MUX_MODE4 | AM33XX_SLEWCTRL_SLOW |
+						AM33XX_PIN_INPUT_PULLUP},
+	{"lcd_data8.uart5_txd", OMAP_MUX_MODE4 | AM33XX_PULL_UP |
+						AM33XX_PULL_DISA |
+						AM33XX_SLEWCTRL_SLOW},
+	{NULL, 0},
+};
+
 /* pinmux for gpio based key */
 static struct pinmux_config gpio_keys_pin_mux[] = {
 	{"gpmc_wait0.gpio0_30", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
@@ -776,6 +824,21 @@ static struct platform_device am335x_evm_keyboard = {
 		.platform_data = &am335x_evm_keypad_platform_data,
 	},
 };
+
+/* pinmux for misc device */
+static struct pinmux_config misc_zbgw_pin_mux[] = {
+	{"lcd_data0.gpio2_6",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{"gpmc_ad14.gpio1_14", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{"gpmc_ad15.gpio1_15", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{"gpmc_ad8.gpio0_22",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{"gpmc_csn2.gpio1_31", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{NULL, 0},
+};
+
+static void misc_zbgw_gpio_init(int evm_id, int profile)
+{
+	setup_pin_mux(misc_zbgw_pin_mux);
+}
 
 static void matrix_keypad_init(int evm_id, int profile)
 {
@@ -919,12 +982,20 @@ static struct pinmux_config ecap2_pin_mux[] = {
 #define AM335XEVM_WLAN_PMENA_GPIO	GPIO_TO_PIN(1, 30)
 #define AM335XEVM_WLAN_IRQ_GPIO		GPIO_TO_PIN(3, 17)
 #define AM335XEVM_SK_WLAN_IRQ_GPIO      GPIO_TO_PIN(0, 31)
+#define AM335XEVM_ZBGW_WLAN_IRQ_GPIO    GPIO_TO_PIN(1, 30) 
+
+struct wl12xx_platform_data am335xevm_wlan_data_old = {
+	.irq = OMAP_GPIO_IRQ(AM335XEVM_WLAN_IRQ_GPIO),
+	.board_ref_clock = WL12XX_REFCLOCK_26, /* 26Mhz WiLink 8 */  
+	.bt_enable_gpio = GPIO_TO_PIN(3, 21),  
+	.wlan_enable_gpio = GPIO_TO_PIN(1, 16), 
+};
 
 struct wl12xx_platform_data am335xevm_wlan_data = {
-	.irq = OMAP_GPIO_IRQ(AM335XEVM_WLAN_IRQ_GPIO),
-	.board_ref_clock = WL12XX_REFCLOCK_38_XTAL, /* 38.4Mhz */
-	.bt_enable_gpio = GPIO_TO_PIN(3, 21),
-	.wlan_enable_gpio = GPIO_TO_PIN(1, 16),
+	.irq = OMAP_GPIO_IRQ(AM335XEVM_ZBGW_WLAN_IRQ_GPIO),
+	.board_ref_clock = WL12XX_REFCLOCK_26, /* 26Mhz WiLink8 */
+	.bt_enable_gpio = GPIO_TO_PIN(2, 1),
+	.wlan_enable_gpio = GPIO_TO_PIN(3, 9),
 };
 
 /* Module pin mux for wlan and bluetooth */
@@ -957,6 +1028,13 @@ static struct pinmux_config wl12xx_pin_mux_sk[] = {
 	{"gpmc_wpn.gpio0_31", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{"gpmc_csn0.gpio1_29", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT_PULLUP},
 	{"mcasp0_ahclkx.gpio3_21", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{NULL, 0},
+};
+
+static struct pinmux_config wl12xx_pin_mux_zbgw[] = {
+	{"gpmc_csn1.gpio1_30", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},         /* WLAN_IRQ */
+	{"mii1_txclk.gpio3_9", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT | AM33XX_PULL_DISA}, /* WLAN_EN */
+	{"gpmc_clk.gpio2_1",   OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT | AM33XX_PULL_DISA}, /* BLUET_EN */
 	{NULL, 0},
 };
 
@@ -1137,6 +1215,20 @@ static void uart2_init(int evm_id, int profile)
 	return;
 }
 
+/* setup uart4 */
+static void uart4_init(int evm_id, int profile)
+{
+	setup_pin_mux(uart4_pin_mux);
+	return;
+}
+
+/* setup uart5 */
+static void uart5_init(int evm_id, int profile)
+{
+	setup_pin_mux(uart5_pin_mux);
+	return;
+}
+
 /*
  * gpio0_7 was driven HIGH in u-boot before DDR configuration
  *
@@ -1209,26 +1301,26 @@ static struct mtd_partition am335x_spi_partitions[] = {
 	{
 		.name       = "SPL",
 		.offset     = 0,			/* Offset = 0x0 */
-		.size       = SZ_128K,
+		.size       = (4 * SZ_128K),
 	},
 	{
 		.name       = "U-Boot",
-		.offset     = MTDPART_OFS_APPEND,	/* Offset = 0x20000 */
-		.size       = (3 * SZ_128K) - SZ_4K,
+		.offset     = MTDPART_OFS_APPEND,	/* Offset = 0x80000 */
+		.size       = (3 * SZ_128K),
 	},
 	{
 		.name       = "U-Boot Env",
-		.offset     = MTDPART_OFS_APPEND,	/* Offset = 0x7F000 */
-		.size       = SZ_4K,
+		.offset     = MTDPART_OFS_APPEND,	/* Offset = 0xE0000 */
+		.size       = (16 * SZ_4K),
 	},
 	{
 		.name       = "Kernel",
-		.offset     = MTDPART_OFS_APPEND,	/* Offset = 0x80000 */
-		.size       = 866 * SZ_4K,		/* size = 0x362000 */
+		.offset     = MTDPART_OFS_APPEND,	/* Offset = 0xF0000 */
+		.size       = (27 * SZ_128K),		/* size = 0x360000 */
 	},
 	{
 		.name       = "File System",
-		.offset     = MTDPART_OFS_APPEND,	/* Offset = 0x3E2000 */
+		.offset     = MTDPART_OFS_APPEND,	/* Offset = 0x450000 */
 		.size       = MTDPART_SIZ_FULL,		/* size ~= 4.1 MiB */
 	}
 };
@@ -1252,6 +1344,24 @@ static struct spi_board_info am335x_spi0_slave_info[] = {
 		.max_speed_hz  = 24000000,
 		.bus_num       = 1,
 		.chip_select   = 0,
+	},
+};
+
+static struct spi_board_info am335x_spi0_zbgw_slave_info[] = {
+	{
+		.modalias      = "m25p80",
+		.platform_data = &am335x_spi_flash,
+		.irq           = -1,
+		.max_speed_hz  = 24000000,
+		.bus_num       = 1,
+		.chip_select   = 0,
+	},
+	{
+		.modalias      = "spidev",
+		.irq           = -1,
+		.max_speed_hz  = 24000000,
+		.bus_num       = 1,
+		.chip_select   = 1,
 	},
 };
 
@@ -1641,6 +1751,19 @@ static void mmc1_init(int evm_id, int profile)
 	return;
 }
 
+static void mmc0_wl12xx_init(int evm_id, int profile)
+{
+	setup_pin_mux(mmc0_common_pin_mux);
+	am335x_mmc[0].mmc = 1;
+	am335x_mmc[0].name = "wl1271";
+	am335x_mmc[0].caps = MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD;
+	am335x_mmc[0].nonremovable = true;
+	am335x_mmc[0].pm_caps = MMC_PM_KEEP_POWER;
+	am335x_mmc[0].gpio_cd = -EINVAL;
+	am335x_mmc[0].gpio_wp = -EINVAL;
+	am335x_mmc[0].ocr_mask = MMC_VDD_32_33 | MMC_VDD_33_34; /* 3V3 */
+}
+
 static void mmc1_wl12xx_init(int evm_id, int profile)
 {
 	setup_pin_mux(mmc1_common_pin_mux);
@@ -1690,8 +1813,79 @@ static void uart1_wl12xx_init(int evm_id, int profile)
 	setup_pin_mux(uart1_wl12xx_pin_mux);
 }
 
+#ifdef CONFIG_TI_ST
+/* TI shred transport for Bluetooth and NFC */
+int plat_kim_suspend(struct platform_device *pdev, pm_message_t state)
+{
+	/* TODO: wait for HCI-LL sleep */
+	return 0;
+}
+
+int plat_kim_resume(struct platform_device *pdev)
+{
+	return 0;
+}
+
+int plat_kim_chip_enable(struct kim_data_s *kim_data)
+{
+	printk(KERN_INFO"%s\n", __func__);
+
+	gpio_set_value(kim_data->nshutdown, 0);
+	msleep(1);
+	gpio_set_value(kim_data->nshutdown, 1);
+
+	return 0;
+}
+
+int plat_kim_chip_disable(struct kim_data_s *kim_data)
+{
+	printk(KERN_INFO"%s\n", __func__);
+
+	gpio_set_value(kim_data->nshutdown, 0);
+
+	return 0;
+}
+
+struct ti_st_plat_data wilink_pdata = {
+	.nshutdown_gpio = GPIO_TO_PIN(2, 1),  
+	.dev_name = "/dev/ttyO1",
+	.flow_cntrl = 1,
+	.baud_rate = 3000000,
+	.suspend = plat_kim_suspend,
+	.resume = plat_kim_resume,
+	.chip_enable = plat_kim_chip_enable,
+	.chip_disable = plat_kim_chip_disable,
+};
+
+static struct platform_device wl12xx_device = {
+	.name		= "kim",
+	.id		= -1,
+	.dev.platform_data = &wilink_pdata,
+};
+
+static struct platform_device btwilink_device = {
+	.name = "btwilink",
+	.id = -1,
+};
+
+static struct platform_device nfcwilink_device = {
+	.name = "nfcwilink",
+	.id = -1,
+};
+
+static inline void __init am335xevm_init_st_platform_data(void)
+{
+	pr_info("am335xevm: shared transport platform init\n");
+
+	platform_device_register(&wl12xx_device);
+	platform_device_register(&btwilink_device);
+	platform_device_register(&nfcwilink_device);
+}
+#endif
+
 static void wl12xx_bluetooth_enable(void)
 {
+#ifndef CONFIG_TI_ST
 	int status = gpio_request(am335xevm_wlan_data.bt_enable_gpio,
 		"bt_en\n");
 	if (status < 0)
@@ -1699,6 +1893,9 @@ static void wl12xx_bluetooth_enable(void)
 
 	pr_info("Configure Bluetooth Enable pin...\n");
 	gpio_direction_output(am335xevm_wlan_data.bt_enable_gpio, 0);
+#else
+	am335xevm_init_st_platform_data();
+#endif
 }
 
 #define AM33XX_CTRL_REGADDR(reg)					\
@@ -1747,6 +1944,12 @@ static void wl12xx_init(int evm_id, int profile)
 		am335xevm_wlan_data.irq =
 				OMAP_GPIO_IRQ(AM335XEVM_SK_WLAN_IRQ_GPIO);
 		setup_pin_mux(wl12xx_pin_mux_sk);
+	} else if (evm_id == ZBGW) {
+		am335xevm_wlan_data.wlan_enable_gpio = GPIO_TO_PIN(3, 9);
+		am335xevm_wlan_data.bt_enable_gpio = GPIO_TO_PIN(2, 1);
+		am335xevm_wlan_data.irq =
+				OMAP_GPIO_IRQ(AM335XEVM_ZBGW_WLAN_IRQ_GPIO);
+		setup_pin_mux(wl12xx_pin_mux_zbgw);
 	} else {
 		setup_pin_mux(wl12xx_pin_mux);
 	}
@@ -1756,7 +1959,14 @@ static void wl12xx_init(int evm_id, int profile)
 	if (wl12xx_set_platform_data(&am335xevm_wlan_data))
 		pr_err("error setting wl12xx data\n");
 
-	dev = am335x_mmc[1].dev;
+        if (evm_id == ZBGW) {
+		dev = am335x_mmc[0].dev;
+	}
+	else
+	{
+		dev = am335x_mmc[1].dev;
+	}
+
 	if (!dev) {
 		pr_err("wl12xx mmc device initialization failed\n");
 		goto out;
@@ -1812,6 +2022,8 @@ static void mmc0_init(int evm_id, int profile)
 	case EVM_SK:
 		setup_pin_mux(mmc0_common_pin_mux);
 		setup_pin_mux(mmc0_cd_only_pin_mux);
+		break;
+	case ZBGW:
 		break;
 	default:
 		setup_pin_mux(mmc0_common_pin_mux);
@@ -1987,6 +2199,15 @@ static void spi0_init(int evm_id, int profile)
 	setup_pin_mux(spi0_pin_mux);
 	spi_register_board_info(am335x_spi0_slave_info,
 			ARRAY_SIZE(am335x_spi0_slave_info));
+	return;
+}
+
+/* setup spi0 */
+static void spi0_zbgw_init(int evm_id, int profile)
+{
+	setup_pin_mux(spi0_zbgw_pin_mux);
+	spi_register_board_info(am335x_spi0_zbgw_slave_info,
+			ARRAY_SIZE(am335x_spi0_zbgw_slave_info));
 	return;
 }
 
@@ -2228,6 +2449,24 @@ static struct evm_dev_cfg evm_sk_dev_cfg[] = {
 	{NULL, 0, 0},
 };
 
+/* ZigBee Gateway */
+static struct evm_dev_cfg zbgw_dev_cfg[] = {
+	{am335x_rtc_init,     DEV_ON_BASEBOARD, PROFILE_NONE},
+	{clkout2_enable,      DEV_ON_BASEBOARD, PROFILE_NONE},
+	{mmc0_wl12xx_init,    DEV_ON_BASEBOARD, PROFILE_NONE},
+	{mmc0_init,	      DEV_ON_BASEBOARD, PROFILE_NONE},
+	{rmii1_init,	      DEV_ON_BASEBOARD, PROFILE_NONE},
+	{evm_nand_init,       DEV_ON_BASEBOARD, PROFILE_NONE},
+	{spi0_zbgw_init,      DEV_ON_BASEBOARD, PROFILE_NONE},
+	{uart4_init,	      DEV_ON_BASEBOARD, PROFILE_NONE},
+	{uart5_init,	      DEV_ON_BASEBOARD, PROFILE_NONE},
+	{misc_zbgw_gpio_init, DEV_ON_BASEBOARD, PROFILE_NONE},
+	{usb0_init,	      DEV_ON_BASEBOARD, PROFILE_NONE},
+	{uart1_wl12xx_init,   DEV_ON_BASEBOARD, PROFILE_NONE},
+	{wl12xx_init,         DEV_ON_BASEBOARD, PROFILE_NONE},
+	{NULL, 0, 0},
+};
+
 static int am33xx_evm_tx_clk_dly_phy_fixup(struct phy_device *phydev)
 {
 	phy_write(phydev, AR8051_PHY_DEBUG_ADDR_REG,
@@ -2331,6 +2570,21 @@ static void am335x_opp_update(void)
 			break;
 		}
 	}
+}
+
+static int am33xx_zigbee_gateway_phy_fixup(struct phy_device *phydev)
+{
+	if (phydev->phy_id == AM335X_ZBGW_PHY_ID)
+	{
+		if (phydev->addr == 0)
+		{
+			am33xx_cpsw_update_phy_id("0:00", "0:01");
+		}
+	
+		/* Set PHY to RMII mode */
+		phy_write(phydev, 0x17, 0x0020);
+	}
+	return 0;
 }
 
 static void setup_general_purpose_evm(void)
@@ -2439,6 +2693,19 @@ static void setup_starterkit(void)
 				   am33xx_evm_tx_clk_dly_phy_fixup);
 }
 
+/* ZigBee Gateway */
+static void setup_zigbee_gateway(void)
+{
+	pr_info("The board is a AM335x ZigBee Gateway.\n");
+
+	_configure_device(ZBGW, zbgw_dev_cfg, PROFILE_NONE);
+
+	am33xx_cpsw_init(AM33XX_CPSW_MODE_RMII, "0:01", "0:00");
+
+	phy_register_fixup_for_uid(AM335X_ZBGW_PHY_ID, AM335X_ZBGW_PHY_MASK,
+					am33xx_zigbee_gateway_phy_fixup);
+}
+
 static void am335x_setup_daughter_board(struct memory_accessor *m, void *c)
 {
 	int ret;
@@ -2520,6 +2787,9 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 	} else if (!strncmp("A335X_SK", config.name, 8)) {
 		daughter_brd_detected = false;
 		setup_starterkit();
+	} else if (!strncmp("A335ZBGW", config.name, 8)) {
+		daughter_brd_detected = false;
+		setup_zigbee_gateway();
 	} else {
 		/* only 6 characters of options string used for now */
 		snprintf(tmp, 7, "%s", config.opt);
@@ -2681,7 +2951,7 @@ static struct omap_musb_board_data musb_board_data = {
 	 * mode[4:7] = USB1PORT's mode
 	 * AM335X beta EVM has USB0 in OTG mode and USB1 in host mode.
 	 */
-	.mode           = (MUSB_HOST << 4) | MUSB_OTG,
+	.mode           = (MUSB_HOST << 4) | MUSB_HOST,
 	.power		= 500,
 	.instances	= 1,
 };

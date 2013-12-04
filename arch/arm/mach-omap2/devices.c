@@ -1613,7 +1613,7 @@ static struct cpsw_platform_data am33xx_cpsw_pdata = {
 	.bd_ram_size		= SZ_8K,
 	.rx_descs               = 64,
 	.mac_control            = BIT(5), /* MIIEN */
-	.gigabit_en		= 1,
+	.gigabit_en		= 0,
 	.host_port_num		= 0,
 	.no_bd_ram		= false,
 	.version		= CPSW_VERSION_2,
@@ -1648,6 +1648,16 @@ void am33xx_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1)
 	}
 
 	return;
+}
+
+void am33xx_cpsw_update_phy_id(unsigned char *phy_id0,
+		     unsigned char *phy_id1)
+{
+	if (phy_id0 != NULL)
+		am33xx_cpsw_slaves[0].phy_id = phy_id0;
+
+	if (phy_id1 != NULL)
+		am33xx_cpsw_slaves[1].phy_id = phy_id1;
 }
 
 int am33xx_cpsw_init(enum am33xx_cpsw_mac_mode mode, unsigned char *phy_id0,
@@ -1693,7 +1703,7 @@ int am33xx_cpsw_init(enum am33xx_cpsw_mac_mode mode, unsigned char *phy_id0,
 		gmii_sel = AM33XX_MII_MODE_EN;
 		break;
 	case AM33XX_CPSW_MODE_RMII:
-		gmii_sel = AM33XX_RMII_MODE_EN;
+		gmii_sel = AM33XX_RMII_MODE_EN | 0xc0; /* Use external crystal */
 		break;
 	case AM33XX_CPSW_MODE_RGMII:
 		gmii_sel = AM33XX_RGMII_MODE_EN;
