@@ -1884,7 +1884,6 @@ CONFIG_SND_SOC_TLV320AIC3X=y
 CONFIG_HID_SUPPORT=y
 CONFIG_HID=y
 # CONFIG_HIDRAW is not set
-# CONFIG_UHID is not set
 
 #
 # USB Input Devices
@@ -2010,7 +2009,7 @@ CONFIG_USB_TI_CPPI41_DMA=y
 #
 # USB Device Class drivers
 #
-# CONFIG_USB_ACM is not set
+CONFIG_USB_ACM=y
 # CONFIG_USB_PRINTER is not set
 # CONFIG_USB_WDM is not set
 # CONFIG_USB_TMC is not set
