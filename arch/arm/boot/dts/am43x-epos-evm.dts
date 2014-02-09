@@ -160,7 +160,7 @@
 
 &am43xx_pinmux {
 	pinctrl-names = "default";
-	pinctrl-0 = <&clkout2_pin>;
+	pinctrl-0 = <&clkout2_pin &wlirq_pins>;
 
 	cpsw_default: cpsw_default {
 		pinctrl-single,pins = <
