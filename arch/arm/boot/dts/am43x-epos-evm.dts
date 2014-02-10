@@ -44,6 +44,18 @@
 		pinctrl-names = "default";
 	};
 
+	kim {
+		compatible = "kim";
+		nshutdown_gpio = <53>; /* Bank1, pin21 */
+		dev_name = "/dev/ttyO3";
+		flow_cntrl = <1>;
+		baud_rate = <3000000>;
+	};
+
+	btwilink {
+		compatible = "btwilink";
+	};
+
 	evm_v3p3: tps63031 {
 		compatible = "regulator-fixed";
 		regulator-name = "evm_v3p3";
@@ -454,6 +466,16 @@
 		pinctrl-single,pins = <
 			0x170 (PIN_INPUT_PULLUP | SLEWCTRL_FAST | DS0_PULL_UP_DOWN_EN | MUX_MODE0) /* uart0_rxd.uart0_rxd */
 			0x174 (PIN_INPUT_PULLUP | SLEWCTRL_FAST | DS0_PULL_UP_DOWN_EN | MUX_MODE0) /* uart0_txd.uart0_txd */
+		>;
+	};
+
+	uart3_pins: uart3_pins {
+		pinctrl-single,pins = <
+			0x230 (PIN_INPUT | MUX_MODE0)			/* uart3_ctsn.uart3_ctsn */
+			0x234 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)		/* uart3_rtsn.uart3_rtsn */
+			0x228 (PIN_INPUT_PULLUP | MUX_MODE0)		/* uart3_rxd.uart3_rxd */
+			0x22C (PIN_OUTPUT_PULLDOWN | MUX_MODE0)		/* uart3_txd.uart3_txd */
+			0x054 (PIN_OUTPUT | MUX_MODE7)			/* gpmc_a7.gpio1_21 */
 		>;
 	};
 
@@ -903,6 +925,12 @@
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart0_pins>;
+};
+
+&uart3 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart3_pins>;
 };
 
 &mcasp1 {
