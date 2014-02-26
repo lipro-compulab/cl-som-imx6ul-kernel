@@ -1,7 +1,15 @@
 wlcore-objs		= main.o cmd.o io.o event.o tx.o rx.o ps.o acx.o \
 			  boot.o init.o debugfs.o scan.o sysfs.o
 
-ifeq ($(wildcard .git/HEAD),)
+# use special params for the compat case
+ifneq ($(KLIB_BUILD),)
+ifneq ($(GIT_TREE),)
+GIT_PATH := $(GIT_TREE)/
+GIT_PATH_PARAM := --git-dir=$(GIT_TREE)/.git
+endif
+endif
+
+ifeq ($(wildcard $(GIT_PATH).git/HEAD),)
 # use release_version.h if .git not exists
 WLCORE_VERSION_DEPS := $(obj)/release_version.h
 
@@ -11,12 +19,12 @@ endef
 
 else
 # use git describe to determine version
-WLCORE_VERSION_DEPS := .git/HEAD .git/index .git/refs/tags
+WLCORE_VERSION_DEPS := $(GIT_PATH).git/HEAD $(GIT_PATH).git/index $(GIT_PATH).git/refs/tags
 
 define filechk_version.h
 	(echo 'static const char *wlcore_timestamp = __TIMESTAMP__;'; \
 	echo 'static const char *wlcore_git_head = \
-			"$(shell git describe --dirty)";')
+			"$(shell git $(GIT_PATH_PARAM) describe --dirty)";')
 endef
 
 endif
