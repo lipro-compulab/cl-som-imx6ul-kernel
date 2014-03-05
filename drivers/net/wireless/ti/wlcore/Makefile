@@ -5,7 +5,7 @@ wlcore-objs		= main.o cmd.o io.o event.o tx.o rx.o ps.o acx.o \
 ifneq ($(KLIB_BUILD),)
 ifneq ($(GIT_TREE),)
 GIT_PATH := $(GIT_TREE)/
-GIT_PATH_PARAM := --git-dir=$(GIT_TREE)/.git
+GIT_CHDIR_CMD := cd $(GIT_TREE) &&
 endif
 endif
 
@@ -24,7 +24,7 @@ WLCORE_VERSION_DEPS := $(GIT_PATH).git/HEAD $(GIT_PATH).git/index $(GIT_PATH).gi
 define filechk_version.h
 	(echo 'static const char *wlcore_timestamp = __TIMESTAMP__;'; \
 	echo 'static const char *wlcore_git_head = \
-			"$(shell git $(GIT_PATH_PARAM) describe --dirty)";')
+			"$(shell $(GIT_CHDIR_CMD) git describe --dirty)";')
 endef
 
 endif
