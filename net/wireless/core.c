@@ -447,7 +447,7 @@ int wiphy_register(struct wiphy *wiphy)
 	 * There are major locking problems in nl80211/mac80211 for CSA,
 	 * disable for all drivers until this has been reworked.
 	 */
-	wiphy->flags &= ~WIPHY_FLAG_HAS_CHANNEL_SWITCH;
+//	wiphy->flags &= ~WIPHY_FLAG_HAS_CHANNEL_SWITCH;
 
 #ifdef CONFIG_PM
 	if (WARN_ON(wiphy->wowlan &&
