@@ -9,7 +9,13 @@ GIT_CHDIR_CMD := cd $(GIT_TREE) &&
 endif
 endif
 
-ifeq ($(wildcard $(GIT_PATH).git/HEAD),)
+ifneq ($(GIT_PATH),)
+GIT_CHECK_PATH := $(GIT_PATH)
+else
+GIT_CHECK_PATH := $(PWD)/
+endif
+
+ifeq ($(wildcard $(GIT_CHECK_PATH).git/HEAD),)
 # use release_version.h if .git not exists
 WLCORE_VERSION_DEPS := $(obj)/release_version.h
 
