@@ -17,10 +17,10 @@ endif
 
 ifeq ($(wildcard $(GIT_CHECK_PATH).git/HEAD),)
 # use release_version.h if .git not exists
-WLCORE_VERSION_DEPS := $(obj)/release_version.h
+WLCORE_VERSION_DEPS := $(src)/release_version.h
 
 define filechk_version.h
-	(cat $(obj)/release_version.h)
+	(cat $(src)/release_version.h)
 endef
 
 else
