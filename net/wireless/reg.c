@@ -244,6 +244,10 @@ static char user_alpha2[2];
 module_param(ieee80211_regdom, charp, 0444);
 MODULE_PARM_DESC(ieee80211_regdom, "IEEE 802.11 regulatory domain code");
 
+static unsigned int dfs_cac_time_ms = IEEE80211_DFS_MIN_CAC_TIME_MS;
+module_param(dfs_cac_time_ms, uint, 0644);
+MODULE_PARM_DESC(dfs_cac_time_ms, "DFS CAC time (in ms)");
+
 static void reg_kfree_last_request(void)
 {
 	struct regulatory_request *lr;
