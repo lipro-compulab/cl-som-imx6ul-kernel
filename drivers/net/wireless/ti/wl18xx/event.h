@@ -84,7 +84,7 @@ struct wl18xx_event_mailbox {
 	u8 sc_token_len;
 	u8 padding1;
 	u8 sc_ssid[32];
-	u8 sc_pwd[32];
+	u8 sc_pwd[64];
 	u8 sc_token[32];
 
 	/* smart config sync channel */
