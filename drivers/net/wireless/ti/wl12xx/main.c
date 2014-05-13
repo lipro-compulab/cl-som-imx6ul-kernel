@@ -1735,8 +1735,7 @@ static struct wlcore_ops wl12xx_ops = {
 };
 
 static struct ieee80211_sta_ht_cap wl12xx_ht_cap = {
-	.cap = IEEE80211_HT_CAP_GRN_FLD | IEEE80211_HT_CAP_SGI_20 |
-	       (1 << IEEE80211_HT_CAP_RX_STBC_SHIFT),
+	.cap = IEEE80211_HT_CAP_GRN_FLD | IEEE80211_HT_CAP_SGI_20,
 	.ht_supported = true,
 	.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K,
 	.ampdu_density = IEEE80211_HT_MPDU_DENSITY_8,
