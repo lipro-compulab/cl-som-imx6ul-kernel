@@ -1795,6 +1795,10 @@ wl18xx_iface_combinations[] = {
 		.limits = wl18xx_iface_limits,
 		.n_limits = ARRAY_SIZE(wl18xx_iface_limits),
 		.num_different_channels = 2,
+		.radar_detect_widths =	BIT(NL80211_CHAN_NO_HT) |
+					BIT(NL80211_CHAN_HT20) |
+					BIT(NL80211_CHAN_HT40MINUS) |
+					BIT(NL80211_CHAN_HT40PLUS),
 	},
 	{
 		.max_interfaces = 2,
