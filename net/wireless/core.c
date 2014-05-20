@@ -361,7 +361,7 @@ static int wiphy_verify_combinations(struct wiphy *wiphy)
 	int i, j;
 
 	for (i = 0; i < wiphy->n_iface_combinations; i++) {
-		u32 cnt = 0;
+		u32 cnt = 0, dfs_cnt = 0;
 		u16 all_iftypes = 0;
 
 		c = &wiphy->iface_combinations[i];
@@ -383,11 +383,6 @@ static int wiphy_verify_combinations(struct wiphy *wiphy)
 		 */
 		if (WARN_ON(c->num_different_channels >
 				CFG80211_MAX_NUM_DIFFERENT_CHANNELS))
-			return -EINVAL;
-
-		/* DFS only works on one channel. */
-		if (WARN_ON(c->radar_detect_widths &&
-			    (c->num_different_channels > 1)))
 			return -EINVAL;
 
 		if (WARN_ON(!c->n_limits))
@@ -415,6 +410,17 @@ static int wiphy_verify_combinations(struct wiphy *wiphy)
 			if (WARN_ON(types & BIT(NL80211_IFTYPE_P2P_DEVICE) &&
 				    c->limits[j].max > 1))
 				return -EINVAL;
+
+			if (types & (BIT(NL80211_IFTYPE_AP) |
+				     BIT(NL80211_IFTYPE_P2P_GO))) {
+				dfs_cnt += c->limits[j].max;
+
+				/* allow AP DFS only on single channel. */
+				if (WARN_ON(c->radar_detect_widths &&
+					    c->num_different_channels > 1 &&
+					    dfs_cnt > 1))
+					return -EINVAL;
+			}
 
 			cnt += c->limits[j].max;
 			/*
