@@ -4696,6 +4696,7 @@ static void wlcore_op_change_chanctx(struct ieee80211_hw *hw,
 {
 	struct wl1271 *wl = hw->priv;
 	struct wl12xx_vif *wlvif;
+	int ret;
 	int channel = ieee80211_frequency_to_channel(
 		ctx->def.chan->center_freq);
 
@@ -4705,18 +4706,23 @@ static void wlcore_op_change_chanctx(struct ieee80211_hw *hw,
 
 	mutex_lock(&wl->mutex);
 
-	if (changed & IEEE80211_CHANCTX_CHANGE_CHANNEL) {
+	ret = wl1271_ps_elp_wakeup(wl);
+	if (ret < 0)
+		goto out;
+
+	wl12xx_for_each_wlvif(wl, wlvif) {
+		struct ieee80211_vif *vif = wl12xx_wlvif_to_vif(wlvif);
+
 		rcu_read_lock();
-		wl12xx_for_each_wlvif(wl, wlvif) {
-			struct ieee80211_vif *vif = wl12xx_wlvif_to_vif(wlvif);
+		if (rcu_access_pointer(vif->chanctx_conf) != ctx) {
+			rcu_read_unlock();
+			continue;
+		}
+		rcu_read_unlock();
 
-			if (rcu_access_pointer(vif->chanctx_conf) != ctx)
-				continue;
-
-			/* TODO: handle sta csa */
-			if (wlvif->bss_type != BSS_TYPE_AP_BSS)
-				continue;
-
+		/* TODO: handle sta csa */
+		if (changed & IEEE80211_CHANCTX_CHANGE_CHANNEL &&
+		    wlvif->bss_type == BSS_TYPE_AP_BSS) {
 			/* make sure this is a csa */
 			WARN_ON(!test_bit(WLVIF_FLAG_BEACON_DISABLED,
 				&wlvif->flags));
@@ -4725,12 +4731,20 @@ static void wlcore_op_change_chanctx(struct ieee80211_hw *hw,
 			wlvif->channel = channel;
 			wlvif->channel_type =
 					cfg80211_get_chandef_type(&ctx->def);
-
-			/* TODO: handle radar_enabled */
 		}
-		rcu_read_unlock();
+
+		/* start radar if needed */
+		if (changed & IEEE80211_CHANCTX_CHANGE_RADAR &&
+		    wlvif->bss_type == BSS_TYPE_AP_BSS &&
+		    ctx->radar_enabled && !wlvif->radar_enabled) {
+			wl1271_debug(DEBUG_MAC80211, "Start radar detection");
+			wlcore_set_cac(wl, wlvif, true);
+			wlvif->radar_enabled = true;
+		}
 	}
 
+	wl1271_ps_elp_sleep(wl);
+out:
 	mutex_unlock(&wl->mutex);
 }
 
