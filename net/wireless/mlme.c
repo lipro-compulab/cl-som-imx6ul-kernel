@@ -734,15 +734,11 @@ void cfg80211_dfs_channels_update_work(struct work_struct *work)
 				   next_time);
 }
 
-
-void cfg80211_radar_event(struct wiphy *wiphy,
-			  struct cfg80211_chan_def *chandef,
-			  gfp_t gfp)
+void cfg80211_disable_dfs_channel(struct wiphy *wiphy,
+				  const struct cfg80211_chan_def *chandef)
 {
 	struct cfg80211_registered_device *rdev = wiphy_to_dev(wiphy);
 	unsigned long timeout;
-
-	trace_cfg80211_radar_event(wiphy, chandef);
 
 	/* only set the chandef supplied channel to unavailable, in
 	 * case the radar is detected on only one of multiple channels
@@ -753,7 +749,17 @@ void cfg80211_radar_event(struct wiphy *wiphy,
 	timeout = msecs_to_jiffies(IEEE80211_DFS_MIN_NOP_TIME_MS);
 	queue_delayed_work(cfg80211_wq, &rdev->dfs_update_channels_wk,
 			   timeout);
+}
 
+void cfg80211_radar_event(struct wiphy *wiphy,
+			  struct cfg80211_chan_def *chandef,
+			  gfp_t gfp)
+{
+	struct cfg80211_registered_device *rdev = wiphy_to_dev(wiphy);
+
+	trace_cfg80211_radar_event(wiphy, chandef);
+
+	cfg80211_disable_dfs_channel(wiphy, chandef);
 	nl80211_radar_notify(rdev, chandef, NL80211_RADAR_DETECTED, NULL, gfp);
 }
 EXPORT_SYMBOL(cfg80211_radar_event);
@@ -782,8 +788,10 @@ void cfg80211_cac_event(struct net_device *netdev,
 		WARN_ON(!time_after_eq(jiffies, timeout));
 		cfg80211_set_dfs_state(wiphy, chandef, NL80211_DFS_AVAILABLE);
 		break;
-	case NL80211_RADAR_CAC_ABORTED:
 	case NL80211_RADAR_DETECTED:
+		cfg80211_disable_dfs_channel(wiphy, chandef);
+		break;
+	case NL80211_RADAR_CAC_ABORTED:
 		break;
 	default:
 		WARN_ON(1);
