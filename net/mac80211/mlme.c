@@ -1421,19 +1421,33 @@ void ieee80211_dfs_cac_timer_work(struct work_struct *work)
 {
 	struct delayed_work *delayed_work =
 		container_of(work, struct delayed_work, work);
-	struct ieee80211_sub_if_data *sdata =
+	struct ieee80211_sub_if_data *sdata_wk =
 		container_of(delayed_work, struct ieee80211_sub_if_data,
 			     dfs_cac_timer_work);
-	struct cfg80211_chan_def chandef = sdata->vif.bss_conf.chandef;
+	struct cfg80211_chan_def chandef = sdata_wk->vif.bss_conf.chandef;
+	struct ieee80211_local *local = sdata_wk->local;
+	struct ieee80211_sub_if_data *sdata;
 
-	mutex_lock(&sdata->local->mtx);
-	if (sdata->wdev.cac_started) {
+	mutex_lock(&local->mtx);
+	mutex_lock(&local->iflist_mtx);
+	list_for_each_entry(sdata, &local->interfaces, list) {
+		const struct cfg80211_chan_def *cur_chandef =
+			&sdata_wk->vif.bss_conf.chandef;
+
+		if (!sdata->wdev.cac_started ||
+		    !cfg80211_chandef_identical(&chandef, cur_chandef))
+			continue;
+
+		if (sdata != sdata_wk)
+			cancel_delayed_work(&sdata->dfs_cac_timer_work);
+
 		ieee80211_vif_release_channel(sdata);
 		cfg80211_cac_event(sdata->dev, &chandef,
 				   NL80211_RADAR_CAC_FINISHED,
 				   GFP_KERNEL);
 	}
-	mutex_unlock(&sdata->local->mtx);
+	mutex_unlock(&local->iflist_mtx);
+	mutex_unlock(&local->mtx);
 }
 
 /* MLME */
