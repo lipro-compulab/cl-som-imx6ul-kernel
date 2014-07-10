@@ -45,8 +45,8 @@
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <1800000>;
 
-		/* WLAN_EN GPIO for this board - Bank1, pin16 */
-		gpio = <&gpio1 16 0>;
+		/* WLAN_EN GPIO for this board - Bank3, pin16 */
+		gpio = <&gpio3 16 0>;
 
 		/* WLAN card specific delay */
 		startup-delay-us = <70000>;
@@ -398,19 +398,19 @@
 	/* wl12xx/wl18xx card enable/irq GPIOs. */
 	wlan_pins_default: pinmux_wlan_pins_default {
 		pinctrl-single,pins = <
-			0x40 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_a0.gpio1_16 */
-			0x19C (PIN_INPUT | MUX_MODE7)		/* mcasp0_ahclkr.gpio3_17 */
-			0x1AC (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* mcasp0_ahclkx.gpio3_21 */
-		>;
-	};
+			0x198 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* gpmc_a0.gpio3_16 */
+			0x1B0 (PIN_INPUT | MUX_MODE7)           /* mcasp0_ahclkr.gpio0_19 */
+			0x1AC (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* mcasp0_ahclkx.gpio3_21 */
+		>;      
+	};  
 
 	wlan_pins_sleep: pinmux_wlan_pins_sleep {
 		pinctrl-single,pins = <
-			0x40 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_a0.gpio1_16 */
-			0x19C (PIN_INPUT | MUX_MODE7)		/* mcasp0_ahclkr.gpio3_17 */
-			0x1AC (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* mcasp0_ahclkx.gpio3_21 */
-		>;
-	};
+			0x198 (PIN_OUTPUT_PULLUP | MUX_MODE7)   /* PULLUP - WLAN_EN to keep the device power up. gpmc_a0.gpio3_16 */
+			0x1B0 (PIN_INPUT | MUX_MODE7)           /* mcasp0_ahclkr.gpio0_19 */
+			0x1AC (PIN_OUTPUT_PULLUP | MUX_MODE7)   /* mcasp0_ahclkx.gpio3_21 */
+		>;      
+	};  
 
 	lcd_pins_default: lcd_pins_default {
 		pinctrl-single,pins = <
@@ -890,8 +890,8 @@
 	wlcore: wlcore@0 {
 		compatible = "ti,wlcore";
 		reg = <2>;
-		interrupt-parent = <&gpio3>;
-		interrupts = <17 IRQ_TYPE_NONE>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <19 IRQ_TYPE_NONE>;
 	};
 };
 
