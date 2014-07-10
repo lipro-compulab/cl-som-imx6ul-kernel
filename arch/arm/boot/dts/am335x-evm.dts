@@ -45,8 +45,8 @@
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <1800000>;
 
-		/* WLAN_EN GPIO for this board - Bank1, pin16 */
-		gpio = <&gpio1 16 0>;
+		/* WLAN_EN GPIO for this board - Bank3, pin16 */
+		gpio = <&gpio3 16 0>;
 
 		/* WLAN card specific delay */
 		startup-delay-us = <70000>;
@@ -741,8 +741,8 @@
 	wlcore: wlcore@0 {
 		compatible = "ti,wlcore";
 		reg = <2>;
-		interrupt-parent = <&gpio3>;
-		interrupts = <17 IRQ_TYPE_NONE>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <19 IRQ_TYPE_NONE>;
 	};
 };
 
