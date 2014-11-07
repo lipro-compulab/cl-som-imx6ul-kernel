@@ -77,7 +77,13 @@
 	wlcore {
 		compatible = "wlcore";
 		gpio = <27>; /* Bank0, pin27 */
-		platform-quirks = <1>;
+
+		/*
+		 * TODO: use edge irqs for suspend/resume.
+		 * in newer kerenls, we seem to miss interrupts when
+		 * working with edge irqs, so revert back to level irqs.
+		 */
+		/* platform-quirks = <1>; */
 
 		/* if a 12xx card is there, configure the clock to
 		   WL12XX_REFCLOCK_38_XTAL */
