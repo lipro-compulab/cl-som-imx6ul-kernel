@@ -31,6 +31,8 @@
 #define CLK_GET_RATE_NOCACHE	BIT(6) /* do not use the cached clk rate */
 #define CLK_SET_RATE_NO_REPARENT BIT(7) /* don't re-parent on rate change */
 #define CLK_GET_ACCURACY_NOCACHE BIT(8) /* do not use the cached clk accuracy */
+#define CLK_IS_TYPE_DEFINED	BIT(9)  /* the clock type is defined */
+#define CLK_IS_TYPE_XTAL	BIT(10) /* this is a crystal clock */
 
 struct clk_hw;
 struct dentry;

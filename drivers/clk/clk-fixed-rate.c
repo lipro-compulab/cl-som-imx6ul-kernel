@@ -118,16 +118,20 @@ void of_fixed_clk_setup(struct device_node *node)
 	const char *clk_name = node->name;
 	u32 rate;
 	u32 accuracy = 0;
+	unsigned long flags = CLK_IS_ROOT;
 
 	if (of_property_read_u32(node, "clock-frequency", &rate))
 		return;
 
 	of_property_read_u32(node, "clock-accuracy", &accuracy);
 
+	if (of_property_read_bool(node, "clock-xtal"))
+		flags |= CLK_IS_TYPE_DEFINED | CLK_IS_TYPE_XTAL;
+
 	of_property_read_string(node, "clock-output-names", &clk_name);
 
 	clk = clk_register_fixed_rate_with_accuracy(NULL, clk_name, NULL,
-						    CLK_IS_ROOT, rate,
+						    flags, rate,
 						    accuracy);
 	if (!IS_ERR(clk))
 		of_clk_add_provider(node, of_clk_src_simple_get, clk);
