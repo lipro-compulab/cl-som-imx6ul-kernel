@@ -74,20 +74,18 @@
 		enable-active-high;
 	};
 
-	wlcore {
-		compatible = "wlcore";
-		gpio = <27>; /* Bank0, pin27 */
+	wlan {
+		compatible = "ti,wilink8";
+		interrupt-parent = <&gpio0>;
+		interrupts = <27 0x4>;	/* gpio line 27, active high level-sensitive */
+		clocks = <&refclock>;
+		clock-names = "refclock";
 
-		/*
-		 * TODO: use edge irqs for suspend/resume.
-		 * in newer kerenls, we seem to miss interrupts when
-		 * working with edge irqs, so revert back to level irqs.
-		 */
-		/* platform-quirks = <1>; */
-
-		/* if a 12xx card is there, configure the clock to
-		   WL12XX_REFCLOCK_38_XTAL */
-		board-ref-clock = <4>;
+		refclock: refclock {
+			compatible = "ti,wilink-clock";
+			#clock-cells = <0>;
+			clock-frequency = <38400000>;
+		};
 	};
 
 	kim {
