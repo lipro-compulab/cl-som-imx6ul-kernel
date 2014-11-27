@@ -401,6 +401,7 @@
 			0x40 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_a0.gpio1_16 */
 			0x19C (PIN_INPUT | MUX_MODE7)		/* mcasp0_ahclkr.gpio3_17 */
 			0x1AC (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* mcasp0_ahclkx.gpio3_21 */
+			0x90  (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* gpmc_advn_ale.gpio2_2 */
 		>;
 	};
 
