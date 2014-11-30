@@ -6,6 +6,8 @@
  * published by the Free Software Foundation.
  */
 
+#include <dt-bindings/interrupt-controller/irq.h>
+
 / {
 	model = "TI AM335x BeagleBone";
 	compatible = "ti,am335x-bone", "ti,am33xx";
@@ -76,16 +78,6 @@
 		/* WLAN card specific delay */
 		startup-delay-us = <70000>;
 		enable-active-high;
-	};
-
-	wlcore {
-		compatible = "wlcore";
-		gpio = <27>; /* Bank0, pin27 */
-		platform-quirks = <1>;
-
-		/* if a 12xx card is there, configure the clock to
-		   WL12XX_REFCLOCK_38_XTAL */
-		board-ref-clock = <4>;
 	};
 
 	kim {
@@ -443,4 +435,13 @@
 	ti,needs-special-hs-handling;
 	cap-power-off-card;
 	keep-power-in-suspend;
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+	wlcore: wlcore@0 {
+		compatible = "ti,wlcore";
+		reg = <2>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <27 IRQ_TYPE_NONE>;
+	};
 };
