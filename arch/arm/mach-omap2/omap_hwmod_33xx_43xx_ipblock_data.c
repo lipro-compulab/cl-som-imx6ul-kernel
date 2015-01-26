@@ -241,6 +241,7 @@ struct omap_hwmod am33xx_gfx_hwmod = {
 	.class		= &am33xx_gfx_hwmod_class,
 	.clkdm_name	= "gfx_l3_clkdm",
 	.main_clk	= "gfx_fck_div_ck",
+	.flags		= HWMOD_SW_SUP_WRKAROUND,
 	.prcm		= {
 		.omap4	= {
 			.modulemode	= MODULEMODE_SWCTRL,

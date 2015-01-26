@@ -538,6 +538,7 @@ struct omap_hwmod_omap4_prcm {
 #define HWMOD_SWSUP_SIDLE_ACT			(1 << 12)
 #define HWMOD_NO_INIT				(1 << 13)
 #define HWMOD_NEEDS_REIDLE			(1 << 14)
+#define HWMOD_SW_SUP_WRKAROUND			(1 << 15)
 
 /*
  * omap_hwmod._int_flags definitions
