@@ -888,10 +888,10 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 	wlcore: wlcore@0 {
-		compatible = "ti,wlcore";
+		compatible = "ti,wl1835";
 		reg = <2>;
 		interrupt-parent = <&gpio0>;
-		interrupts = <19 IRQ_TYPE_NONE>;
+		interrupts = <19 IRQ_TYPE_LEVEL_HIGH>;
 	};
 };
 
