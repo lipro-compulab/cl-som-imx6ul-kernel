@@ -263,6 +263,7 @@
 			0x2C (PIN_INPUT_PULLUP | MUX_MODE7)	/* gpmc_ad11.gpio0_27 WL_IRQ*/
 			0x30 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_ad12.gpio1_12 BT_EN*/
 			0x7C (PIN_OUTPUT_PULLUP | MUX_MODE0)	/* gpmc_csn0.gpio1_29 BF_EN*/
+			0x90  (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* gpmc_advn_ale.gpio2_2*/
 		>;
 	};
 
@@ -273,6 +274,7 @@
 			0x2C (PIN_INPUT_PULLUP | MUX_MODE7)	/* gpmc_ad11.gpio0_27 WL_IRQ*/
 			0x30 (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* gpmc_ad12.gpio1_12 BT_EN*/
 			0x7C (PIN_OUTPUT_PULLUP | MUX_MODE0)	/* gpmc_csn0.gpio1_29 BF_EN*/
+			0x90  (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* gpmc_advn_ale.gpio2_2*/
 		>;
 	};
 
