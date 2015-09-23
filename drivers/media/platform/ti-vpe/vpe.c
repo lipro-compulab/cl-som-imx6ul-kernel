@@ -1063,6 +1063,8 @@ static void add_out_dtd(struct vpe_ctx *ctx, int port)
 				port);
 			return;
 		}
+		if (plane)
+			dma_addr += q_data->width * q_data->height;
 	}
 
 	if (q_data->flags & Q_DATA_FRAME_1D)
