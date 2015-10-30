@@ -1,0 +1,66 @@
+Keystone Crypto Driver
+
+This document explains the device tree bindings for the side-band Security
+Accelerator on keystone devices. 
+
+Required properties:
+ - compatible: should be "ti,keystone-crypto".
+
+ - clock: pandle to clksa clock.
+
+ - reg: Should contain register location and length of the SA hardware
+	module.
+
+ - ti,navigator-dmas and ti,navigator-dma-names: Security accelerator uses
+	2 dma channels. Rx and Tx. The first property is the pandle to the
+	knav_dmas subsystem and flow for RX channel and channel number for
+	TX channel. The second property is corresponding channel names.
+
+ - rx-channel: name of RX channel.
+
+ - rx-queue-depth and rx-buffer-size: RX channel may use upto 4 free
+ 	descriptor queue. Those properties describes number of buffers in
+	each queue and the buffer's length.
+
+ - rx-compl-queue: RX completion queue number.
+ 
+ - rx-pool: number of buffer descriptos and region for rx-pool.
+
+ - tx-channel: name of TX channel.
+
+ - tx-queue-depth: number of TX descriptos.
+
+ - tx-compl-queue: TX completion queue number.
+
+ - tx-pool: number of buffer descriptos and region for tx-pool.
+
+ - tx-submit-queue: submition queue number for TX channel.
+
+ - sc-id: ???
+
+
+Example:
+
+crypto@20c0000 {
+	compatible = "ti,keystone-crypto";
+	label = "crypto-gbe";
+	reg = <0x20c0000 0x40000>;
+	clocks = <&clksa>;
+
+	ti,navigator-dmas = <&dma_gbe 26>, <&dma_gbe 6>;
+	ti,navigator-dma-names = "crypto-rx", "crypto-tx";
+
+	rx-channel = "crypto-rx";
+	rx-queue-depth = <256 64 0 0>;
+	rx-buffer-size = <1500 4096 0 0>;
+	rx-compl-queue = <8712>;
+	rx-pool	= <512 12>;
+
+	tx-channel = "crypto-tx";
+	tx-queue-depth = <256>;
+	tx-compl-queue = <8713>;
+	tx-pool = <512 12>;
+	tx-submit-queue = <646>;
+
+	sc-id = <0x7000 0x71ff>;
+};
