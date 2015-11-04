@@ -431,3 +431,27 @@ netcpx: netcpx@2f00000 {
 		};
 	};
 };
+
+crypto@24080000 {
+	compatible = "ti,keystone-crypto";
+	label = "crypto-gbe";
+	reg = <0x24080000 0x40000>;
+	clocks = <&clksa>;
+
+	ti,navigator-dmas = <&dma_gbe 26>, <&dma_gbe 18>;
+	ti,navigator-dma-names = "crypto-rx", "crypto-tx";
+
+	rx-channel = "crypto-rx";
+	rx-queue-depth = <256 64 0 0>;
+	rx-buffer-size = <1500 4096 0 0>;
+	rx-compl-queue = <536>;
+	rx-pool	= <512 12>;
+
+	tx-channel = "crypto-tx";
+	tx-queue-depth = <256>;
+	tx-compl-queue = <537>;
+	tx-pool = <512 12>;
+	tx-submit-queue = <914>;
+
+	sc-id = <0x7000 0x71ff>;
+};
