@@ -15,7 +15,8 @@ obj-$(CONFIG_TI_CPSW_ALE) += cpsw_ale.o
 obj-$(CONFIG_TI_CPSW) += ti_cpsw.o
 ti_cpsw-y := cpsw.o cpts.o
 
+obj-$(CONFIG_TI_KEYSTONE_NETCP_CPTS) += netcp_cpts.o
 obj-$(CONFIG_TI_KEYSTONE_NETCP) += keystone_netcp.o
 keystone_netcp-y := netcp_core.o
 obj-$(CONFIG_TI_KEYSTONE_NETCP_ETHSS) += keystone_netcp_ethss.o
-keystone_netcp_ethss-y := netcp_ethss.o netcp_sgmii.o
+keystone_netcp_ethss-y := netcp_ethss.o netcp_sgmii.o $(netcp_cpts-y)
