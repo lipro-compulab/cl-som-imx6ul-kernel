@@ -13,7 +13,7 @@
 
 / {
 	model = "CompuLab i.MX6 UltraLite SoM";
-	compatible = "fsl,imx6ul";
+	compatible = "fsl,imx6ul", "compulab,cl-som-imx6ul";
 
 	memory {
 		reg = <0x80000000 0x20000000>;
