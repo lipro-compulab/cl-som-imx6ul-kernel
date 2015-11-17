@@ -874,6 +874,13 @@ config SOC_IMX6UL
 	help
 	  This enables support for Freescale i.MX6 UltraLite processor.
 
+config CL_SOM_IMX6UL
+	bool "CompuLab SoM i.MX6ul board support"
+	depends on SOC_IMX6UL
+
+	help
+	  This enables support for CompuLab SoM i.MX6ul board.
+
 config SOC_IMX7
 	bool
 	select CPU_V7
