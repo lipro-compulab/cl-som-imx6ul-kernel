@@ -9,6 +9,7 @@
 /dts-v1/;
 
 #include <dt-bindings/input/input.h>
+#include <dt-bindings/interrupt-controller/irq.h>
 #include "imx6ul.dtsi"
 
 / {
@@ -92,6 +93,7 @@
 			regulator-max-microvolt = <3300000>;
 			regulator-always-on;
 		};
+
 	};
 
 	leds {
@@ -108,7 +110,7 @@
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog_1>;
-	imx6ul-som-compulab {
+	cl-som-imx6ul {
 		pinctrl_hog_1: hoggrp-1 {
 			fsl,pins = <
 				/* Heartbeat */
@@ -133,6 +135,15 @@
 				MX6UL_PAD_ENET1_TX_DATA1__ENET1_TDATA01	0x1b0b0
 				MX6UL_PAD_ENET1_TX_CLK__ENET1_REF_CLK1	0x4001b031
 				MX6UL_PAD_SNVS_TAMPER5__GPIO5_IO05	0x80000000
+			>;
+		};
+
+		pinctrl_uart2: uart2grp {
+			fsl,pins = <
+				MX6UL_PAD_UART2_TX_DATA__UART2_DCE_TX 0x1b0b1
+				MX6UL_PAD_UART2_RX_DATA__UART2_DCE_RX 0x1b0b1
+				MX6UL_PAD_UART2_CTS_B__UART2_DCE_CTS 0x1b0b1
+				MX6UL_PAD_UART2_RTS_B__UART2_DCE_RTS 0x1b0b1
 			>;
 		};
 
@@ -288,8 +299,8 @@
 &usdhc1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc1>;
-        cd-gpios = <&gpio1 19 0>;
-        wp-gpios = <&gpio1 18 0>;
+	cd-gpios = <&gpio1 19 0>;
+	wp-gpios = <&gpio1 18 0>;
 	keep-power-in-suspend;
 	enable-sdio-wakeup;
 	status = "okay";
