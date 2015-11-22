@@ -1,0 +1,98 @@
+/*
+ * Copyright (C) 2015 CompuLab LTD.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+#include "cl-som-imx6ul.dts"
+
+/ {
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		wlan_en_reg: wlan_en-reg {
+			compatible = "regulator-fixed";
+			regulator-name = "wlan-en-regulator";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			gpio = <&gpio5 1 GPIO_ACTIVE_HIGH>;
+			/* WLAN card specific delay */
+			startup-delay-us = <70000>;
+			enable-active-high;
+		};
+	};
+
+	kim {
+		compatible = "kim";
+		nshutdown_gpio = <128>;  /* GPIO5_IO00 */
+		dev_name = "/dev/ttymxc1";
+		flow_cntrl = <1>;
+		baud_rate = <3000000>;
+	};
+
+	btwilink {
+		compatible = "btwilink";
+	};
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog_1 &pinctrl_hog_2>;
+	cl-som-imx6ul {
+		pinctrl_hog_2: hoggrp-2 {
+			fsl,pins = <
+				/* Wlan En */
+				MX6UL_PAD_SNVS_TAMPER1__GPIO5_IO01 0x17059
+				/* Wlan IRQ */
+				MX6UL_PAD_SNVS_TAMPER9__GPIO5_IO09 0x17059
+				/* Bt En */
+				MX6UL_PAD_SNVS_TAMPER0__GPIO5_IO00 0x17059
+			>;
+		};
+
+		pinctrl_uart2: uart2grp {
+			fsl,pins = <
+				MX6UL_PAD_UART2_TX_DATA__UART2_DCE_TX 0x1b0b1
+				MX6UL_PAD_UART2_RX_DATA__UART2_DCE_RX 0x1b0b1
+				MX6UL_PAD_UART2_CTS_B__UART2_DCE_CTS 0x1b0b1
+				MX6UL_PAD_UART2_RTS_B__UART2_DCE_RTS 0x1b0b1
+			>;
+		};
+	};
+};
+
+&uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2>;
+	status = "okay";
+
+	/* enable rts/cts usage on uart2 */
+	fsl,uart-has-rtscts;
+};
+
+&usdhc1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc1>;
+	/* clean up the removable device fields */
+	cd-gpios = <>;
+	wp-gpios = <>;
+	no-1-8-v;
+	keep-power-in-suspend;
+	enable-sdio-wakeup;
+	vmmc-supply = <&wlan_en_reg>;
+	non-removable;
+	cap-power-off-card;
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	wlcore: wlcore@0 {
+		compatible = "ti,wl1835";
+		reg = <2>;
+		interrupt-parent = <&gpio5>;
+		interrupts = <9 IRQ_TYPE_LEVEL_HIGH>;
+	};
+};
