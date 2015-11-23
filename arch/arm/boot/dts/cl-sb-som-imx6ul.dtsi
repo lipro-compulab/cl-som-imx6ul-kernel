@@ -1,0 +1,45 @@
+/*
+ * Suppport for CompuLab SB-SOM baseboard
+ */
+
+/ {
+	reg_lcd_nstby_3v3: lcd_nstby_3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "lcd_nstby_3v3";
+		gpio = <&pca9555 14 0>;
+		enable-active-high;
+		regulator-always-on;
+	};
+
+	reg_div_en_3v3: div_en_3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "dvi_en_3v3";
+		gpio = <&pca9555 13 0>;
+		enable-active-high;
+		regulator-always-on;
+	};
+
+};
+
+&i2c1 {
+	status = "okay";
+
+	eeprom@54 {
+		compatible = "at24,24c02";
+		reg = <0x54>;
+		pagesize = <16>;
+	};
+
+	pca9555: pca9555@20 {
+		compatible = "nxp,pca9555";
+		gpio-controller;
+		#gpio-cells = <2>;
+		reg = <0x20>;
+	};
+
+	dvicape {
+		compatible = "sil164";
+		reg = <0x39>;
+		powerdn-gpio = <&pca9555 13 0>;
+	};
+};
