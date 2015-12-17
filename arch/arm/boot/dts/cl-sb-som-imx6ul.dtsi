@@ -38,7 +38,7 @@
 	};
 
 	dvicape {
-		compatible = "sil164";
+		compatible = "sil164_simple";
 		reg = <0x39>;
 		powerdn-gpio = <&pca9555 13 0>;
 	};
