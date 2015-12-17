@@ -52,4 +52,8 @@ if FB || SGI_NEWPORT_CONSOLE
 endif
 
 
+if CL_SOM_IMX6UL
+source "drivers/video/si/Kconfig"
+endif
+
 endmenu
