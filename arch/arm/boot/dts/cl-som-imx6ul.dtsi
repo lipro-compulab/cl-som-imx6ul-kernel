@@ -439,7 +439,7 @@
 
 		display-timings {
 			native-mode = <&timing0>;
-			timing0: timing0 {
+			timing0: lcd {
 				clock-frequency = <29580000>;
 				hactive = <800>;
 				vactive = <480>;
@@ -449,6 +449,23 @@
 				vback-porch = <13>;
 				vfront-porch = <16>;
 				vsync-len = <16>;
+
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+			timing1: dvi {
+				/* 1024x768p60 */
+				clock-frequency = <65000000>;
+				hactive = <1024>;
+				vactive = <768>;
+				hback-porch = <220>;
+				hfront-porch = <40>;
+				vback-porch = <21>;
+				vfront-porch = <7>;
+				hsync-len = <60>;
+				vsync-len = <10>;
 
 				hsync-active = <0>;
 				vsync-active = <0>;
