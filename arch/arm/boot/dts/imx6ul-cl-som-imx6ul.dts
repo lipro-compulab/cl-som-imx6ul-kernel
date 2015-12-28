@@ -8,7 +8,7 @@
 
 /dts-v1/;
 
-#include "cl-som-imx6ul.dtsi"
+#include "imx6ul-cl-som-imx6ul.dtsi"
 
 / {
 	model = "CompuLab i.MX6 UltraLite SoM";

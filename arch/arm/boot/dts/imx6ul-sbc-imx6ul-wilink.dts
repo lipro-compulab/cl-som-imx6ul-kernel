@@ -1,0 +1,11 @@
+/*
+ * Suppport for CompuLab SB-SOM-iMX6UL baseboard
+ */
+
+#include "imx6ul-cl-som-imx6ul-wilink.dts"
+#include "imx6ul-sb-som-imx6ul.dtsi"
+
+/ {
+	model = "Compulab iMX6UL on SB-SOM";
+	compatible = "fsl,imx6ul", "compulab,cl-som-imx6ul", "compulab,sbc-imx6ul";
+};
