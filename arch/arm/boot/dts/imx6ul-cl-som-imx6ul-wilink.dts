@@ -6,7 +6,7 @@
  * published by the Free Software Foundation.
  */
 
-#include "cl-som-imx6ul.dts"
+#include "imx6ul-cl-som-imx6ul.dts"
 
 / {
 	regulators {
