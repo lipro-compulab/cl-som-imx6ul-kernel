@@ -322,6 +322,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_gpmi_nand>;
 	nand-on-flash-bbt;
+	depends = "/soc/aips-bus@02000000/spba-bus@02000000/ecspi@02014000";
 	status = "disabled";
 
 	partition@0 {
