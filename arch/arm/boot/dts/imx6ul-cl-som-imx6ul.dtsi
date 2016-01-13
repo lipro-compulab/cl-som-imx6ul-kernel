@@ -11,6 +11,11 @@
 #include "imx6ul.dtsi"
 
 / {
+	aliases {
+		gpmi = &gpmi;
+		lcdif = &lcdif;
+	};
+
 	memory {
 		reg = <0x80000000 0x20000000>;
 	};
